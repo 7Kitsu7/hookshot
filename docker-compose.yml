@@ -7,9 +7,19 @@ services:
       - POSTGRES_USER=hookuser
       - POSTGRES_PASSWORD=hookpass
       - POSTGRES_DB=hookshot_db
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hookuser -d hookshot_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   redis:
     image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   api:
     build: .
@@ -21,8 +31,10 @@ services:
       - DATABASE_URL=postgresql://hookuser:hookpass@db/hookshot_db
       - REDIS_URL=redis://redis:6379/0
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
 
   worker:
     build: .
@@ -31,8 +43,11 @@ services:
       - DATABASE_URL=postgresql://hookuser:hookpass@db/hookshot_db
       - REDIS_URL=redis://redis:6379/0
     depends_on:
-      - redis
-      - db
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: on-failure
 
   beat:
     build: .
@@ -41,8 +56,11 @@ services:
       - DATABASE_URL=postgresql://hookuser:hookpass@db/hookshot_db
       - REDIS_URL=redis://redis:6379/0
     depends_on:
-      - redis
-      - db
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: on-failure
 
 volumes:
   postgres_data:
