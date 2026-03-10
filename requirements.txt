@@ -1,0 +1,11 @@
+fastapi==0.109.0
+uvicorn==0.27.0
+sqlalchemy==2.0.25
+alembic==1.13.1
+psycopg2-binary==2.9.9
+celery==5.3.6
+redis==5.0.1
+httpx==0.26.0
+pytest==7.4.4
+python-dotenv==1.0.1
+unfurl==0.0.2
